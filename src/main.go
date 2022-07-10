@@ -43,10 +43,10 @@ func main() {
 	r.PUT("/album/:album_id", func(c *gin.Context) {
 		var repo = AlbumRepo{db}
 		var albumId, _ = strconv.ParseInt(c.Param("album_id"), 10, 64)
-		var userId, _ = strconv.ParseInt(c.Query("user_id"), 10, 64)
 		var title = c.Query("title")
 
-		repo.Update(Album{ID: albumId, UserID: userId, Title: title})
+		repo.Update(Album{ID: albumId, Title: title})
+		c.JSON(http.StatusOK, "")
 	})
 
 	r.POST("/album", func(c *gin.Context) {
@@ -93,6 +93,7 @@ func main() {
 		var albumId, _ = strconv.ParseInt(c.Query("album_id"), 10, 64)
 
 		repo.Update(Photo{ID: photoId, AlbumID: albumId})
+		c.JSON(http.StatusOK, "")
 	})
 
 	r.POST("/photo", func(c *gin.Context) {

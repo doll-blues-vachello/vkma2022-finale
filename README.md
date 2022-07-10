@@ -59,15 +59,14 @@ Returns:
 }
 ```
 
-#### GET `/album/by_user/<user_id>` // todo…
+#### PUT `/album/<album_id>`
 
-```
-{
-    "albums": {
-        ""
-    }
-}
-```
+* `album_id`
+* `title` - title to update
+
+#### DELETE `/album/<album_id>`
+
+* `album_id`
 
 ### Photos
 
@@ -103,6 +102,15 @@ Returns:
 }
 ```
 
+#### PUT `/photo/<photo_id>`
+
+* `photo_id`
+* `album_id` - id to update
+
+#### DELETE `/photo/<photo_id>`
+
+* `photo_id`
+
 ### Autographs
 
 #### POST `/autograph/text`
@@ -128,6 +136,15 @@ Returns:
     "created"   int64 (unix time)
 }
 ```
+
+#### PUT `/autograph/text/<autograph_id>`
+
+* `autograph_id`
+* `text` - text to update
+
+#### DELETE `/autograph/text/<autograph_id>`
+
+* `autograph_id`
 
 #### POST `/autograph/svg`
 
@@ -160,3 +177,7 @@ Returns:
     "created"   int64 (unix time)
 }
 ```
+
+#### DELETE `/autograph/svg/<autograph_id>`
+
+* `autograph_id`

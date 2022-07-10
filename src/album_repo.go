@@ -44,11 +44,10 @@ func (repo AlbumRepo) Update(album Album) {
 		UPDATE
 			Albums
 		SET
-			UserID = %d,
-			Title  = '%s',
+			Title = '%s',
 		WHERE
 			ID = %d
-	`, album.UserID, album.Title, album.ID)
+	`, album.Title, album.ID)
 
 	repo.DB.Exec(query)
 }
