@@ -90,3 +90,19 @@ Returns:
     "url"          string
 }
 ```
+
+#### GET `/autograph/svg/<autograph_id>`
+
+* `autograph_id`
+
+Returns:
+
+```
+{
+    "id"        int64
+    "photo_id"  int64
+    "author_id" int64
+    "url"       string
+    "created"   int64 (unix time)
+}
+```
