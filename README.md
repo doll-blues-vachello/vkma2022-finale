@@ -2,8 +2,31 @@
 
 > hihi haha ©
 
+## Getting started
+
+Make sure you've installed `go`, `make`, `git` and `sqlite3`
+
+#### Install
+
+```
+go get -u github.com/gin-gonic/gin
+go get github.com/mattn/go-sqlite3
+```
+
+#### Build
+
+```
+make database
+make server
+```
+
+#### Run
+
+```
+./bin/vkma2022-finale
+```
+
 ## API
----
 
 ### Albums
 
