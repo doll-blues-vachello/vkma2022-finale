@@ -16,9 +16,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const API_URL = "localhost:8080/"
-
 func main() {
+	PORT := os.Getenv("VKMA_PORT")
+	API_URL := "http://vkma.kheynov.ru/"
+
+	fmt.Println("api url:", API_URL)
+	fmt.Println("port:", PORT)
+
 	var r = gin.Default()
 	var db, err = sql.Open("sqlite3", "storage.db")
 
@@ -265,7 +269,7 @@ func main() {
 		c.JSON(http.StatusOK, autograph)
 	})
 
-	r.Run(":4567")
+	r.Run(":" + PORT)
 }
 
 func hashName(id_1 int64, id_2 int64, ext string) string {

@@ -20,6 +20,13 @@ make database
 make server
 ```
 
+#### Env
+
+```
+export VKMA_PORT=<port>
+export GIN_MODE=release
+```
+
 #### Run
 
 ```
