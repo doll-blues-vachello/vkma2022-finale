@@ -20,7 +20,7 @@ func (repo AlbumRepo) Add(album Album) int64 {
 	return id
 }
 
-func (repo AlbumRepo) GetById(id int64) (Album, error) {
+func (repo AlbumRepo) GetByID(id int64) (Album, error) {
 	var album Album
 	var created time.Time
 	var query = fmt.Sprintf("SELECT * FROM Albums WHERE ID = %d", id)

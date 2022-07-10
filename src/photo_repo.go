@@ -20,7 +20,7 @@ func (repo PhotoRepo) Add(photo Photo) int64 {
 	return id
 }
 
-func (repo PhotoRepo) GetById(id int64) (Photo, error) {
+func (repo PhotoRepo) GetByID(id int64) (Photo, error) {
 	var photo Photo
 	var created time.Time
 	var query = fmt.Sprintf("SELECT * FROM Photos WHERE ID = %d", id)

@@ -72,3 +72,21 @@ Returns:
     "url"      string
 }
 ```
+
+### Autographs
+
+#### POST `/autograph/svg`
+
+* `photo_id`
+* `author_id`
+
+Request body: svg
+
+Returns:
+
+```
+{
+    "autograph_id" int64
+    "url"          string
+}
+```

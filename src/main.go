@@ -48,7 +48,7 @@ func main() {
 			return
 		}
 
-		var album, err2 = repo.GetById(albumId)
+		var album, err2 = repo.GetByID(albumId)
 
 		if err2 != nil {
 			c.JSON(http.StatusBadRequest, "error")
@@ -74,7 +74,7 @@ func main() {
 			panic("Bad png")
 		}
 
-		fileName := hashName(albumId, uploaderId)
+		fileName := hashName(albumId, uploaderId, "png")
 		filePath := "var/photos/" + fileName
 
 		f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0777)
@@ -105,7 +105,7 @@ func main() {
 			return
 		}
 
-		var photo, err2 = repo.GetById(photoId)
+		var photo, err2 = repo.GetByID(photoId)
 
 		if err2 != nil {
 			c.JSON(http.StatusBadRequest, "error")
@@ -115,14 +115,70 @@ func main() {
 		c.JSON(http.StatusOK, photo)
 	})
 
+	r.POST("/autograph/svg", func(c *gin.Context) {
+		var repo = ImageAutographRepo{db}
+		var photoId, _ = strconv.ParseInt(c.Query("photo_id"), 10, 64)
+		var authorId, _ = strconv.ParseInt(c.Query("author_id"), 10, 64)
+
+		data, e := ioutil.ReadAll(c.Request.Body)
+		if e != nil {
+			panic(e)
+		}
+
+		fileName := hashName(photoId, authorId, "svg")
+		filePath := "var/autographs/" + fileName
+
+		f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0777)
+		if err != nil {
+			panic("Cannot open file")
+		}
+
+		f.Write(data)
+		f.Close()
+
+		url := API_URL + filePath
+
+		var autographId = repo.Add(ImageAutograph{
+			PhotoID:  photoId,
+			AuthorID: authorId,
+			Url:      url,
+		})
+
+		c.JSON(http.StatusOK, ImageAutographResponse{
+			AutographID: autographId,
+			Url:         url,
+		})
+	})
+
+	r.GET("/autograph/svg/:autograph_id", func(c *gin.Context) {
+		var repo = ImageAutographRepo{db}
+		var autographId, e = strconv.ParseInt(c.Param("autograph_id"), 10, 64)
+
+		if e != nil {
+			c.JSON(http.StatusBadRequest, "error")
+			fmt.Println(e)
+			return
+		}
+
+		var autograph, err2 = repo.GetByID(autographId)
+
+		if err2 != nil {
+			c.JSON(http.StatusNotFound, "error")
+			fmt.Println(err2)
+			return
+		}
+
+		c.JSON(http.StatusOK, autograph)
+	})
+
 	r.Run()
 }
 
-func hashName(id_1 int64, id_2 int64) string {
+func hashName(id_1 int64, id_2 int64, ext string) string {
 	h := fnv.New32a()
 	s := fmt.Sprintf("%d-%s-%d", id_1, time.Now(), id_2)
 	h.Write([]byte(s))
 
-	name := fmt.Sprintf("%d.png", h.Sum32())
+	name := fmt.Sprintf("%d.%s", h.Sum32(), ext)
 	return name
 }

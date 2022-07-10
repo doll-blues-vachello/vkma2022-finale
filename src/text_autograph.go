@@ -1,6 +1,6 @@
 package main
 
-type TextAutographs struct {
+type TextAutograph struct {
 	ID       int64  `json:"id"`
 	PhotoID  int64  `json:"photo_id"`
 	AuthorID int64  `json:"author_id"`
