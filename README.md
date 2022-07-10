@@ -75,6 +75,30 @@ Returns:
 
 ### Autographs
 
+#### POST `/autograph/text`
+
+* `photo_id`
+* `author_id`
+* `text`
+
+Returns: autograph id
+
+#### GET `/autograph/text/<autograph_id>`
+
+* `autograph_id`
+
+Returns:
+
+```
+{
+    "id"        int64
+    "photo_id"  int64
+    "author_id" int64
+    "text"      string
+    "created"   int64 (unix time)
+}
+```
+
 #### POST `/autograph/svg`
 
 * `photo_id`
