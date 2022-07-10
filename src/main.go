@@ -1,36 +1,25 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
+	"hash/fnv"
+	"image/png"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Id uint64
-
-type AccessLevel uint8
-
-const (
-	READ   AccessLevel = 1
-	CREATE AccessLevel = 2
-	DELETE AccessLevel = 4
-)
-
-type AlbumAccess struct {
-	albumId     Id
-	userId      Id
-	accessLevel AccessLevel
-}
+const API_URL = "localhost:8080/"
 
 func main() {
 	var r = gin.Default()
-	// var dbContext DbContext
-	// dbContext.Open("storage.db")
-	// defer dbContext.Close()
-
 	var db, err = sql.Open("sqlite3", "storage.db")
 
 	if err != nil {
@@ -39,67 +28,101 @@ func main() {
 
 	defer db.Close()
 
-	r.GET("/albumAccess/add", func(c *gin.Context) {
-		Add(db, AlbumAccess{1, 1, 7})
-		c.JSON(http.StatusOK, gin.H{
-			"status": "ok",
+	r.POST("/album", func(c *gin.Context) {
+		var repo = AlbumRepo{db}
+		var userId, _ = strconv.ParseInt(c.Query("user_id"), 10, 64)
+
+		var albumId = repo.Add(Album{
+			UserID: userId,
+			Title:  c.DefaultQuery("title", "untitled"),
 		})
+		c.JSON(http.StatusOK, albumId)
 	})
 
-	r.GET("/albumAccess/get", func(c *gin.Context) {
-		var aa = GetByAlbumId(db, 1)
+	r.GET("/album/:album_id", func(c *gin.Context) {
+		var repo = AlbumRepo{db}
+		var albumId, err = strconv.ParseInt(c.Param("album_id"), 10, 64)
 
-		c.JSON(http.StatusOK, gin.H{
-			"list": aa,
+		if err != nil {
+			c.JSON(http.StatusBadRequest, "error")
+			return
+		}
+
+		var album, err2 = repo.GetById(albumId)
+
+		if err2 != nil {
+			c.JSON(http.StatusBadRequest, "error")
+			return
+		}
+
+		c.JSON(http.StatusOK, album)
+	})
+
+	r.POST("/photo", func(c *gin.Context) {
+		var repo = PhotoRepo{db}
+		var albumId, _ = strconv.ParseInt(c.Query("album_id"), 10, 64)
+		var uploaderId, _ = strconv.ParseInt(c.Query("uploader_id"), 10, 64)
+
+		data, e := ioutil.ReadAll(c.Request.Body)
+		if e != nil {
+			panic(e)
+		}
+
+		reader := bytes.NewReader(data)
+		im, err := png.Decode(reader)
+		if err != nil {
+			panic("Bad png")
+		}
+
+		fileName := hashName(albumId, uploaderId)
+		filePath := "var/photos/" + fileName
+
+		f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0777)
+		if err != nil {
+			panic("Cannot open file")
+		}
+
+		png.Encode(f, im)
+		f.Close()
+
+		url := API_URL + filePath
+
+		var photoId = repo.Add(Photo{
+			AlbumID:    albumId,
+			UploaderID: uploaderId,
+			Url:        url,
 		})
+
+		c.JSON(http.StatusOK, PhotoResponse{PhotoID: photoId, Url: url})
+	})
+
+	r.GET("/photo/:photo_id", func(c *gin.Context) {
+		var repo = PhotoRepo{db}
+		var photoId, err = strconv.ParseInt(c.Param("photo_id"), 10, 64)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, "error")
+			return
+		}
+
+		var photo, err2 = repo.GetById(photoId)
+
+		if err2 != nil {
+			c.JSON(http.StatusBadRequest, "error")
+			return
+		}
+
+		c.JSON(http.StatusOK, photo)
 	})
 
 	r.Run()
 }
 
-func Add(db *sql.DB, albumAccess AlbumAccess) {
-	var query = fmt.Sprintf(
-		"INSERT INTO %s(albumId, userId, accessLevel) VALUES(%d, %d, %d)",
-		"AlbumAccess",
-		albumAccess.albumId,
-		albumAccess.userId,
-		albumAccess.accessLevel,
-	)
+func hashName(id_1 int64, id_2 int64) string {
+	h := fnv.New32a()
+	s := fmt.Sprintf("%d-%s-%d", id_1, time.Now(), id_2)
+	h.Write([]byte(s))
 
-	var _, err = db.Exec(query)
-
-	if err != nil {
-		panic(err)
-	}
-}
-
-func GetByAlbumId(db *sql.DB, albumId Id) []AlbumAccess {
-	var albumAccessList []AlbumAccess
-	var query = fmt.Sprintf(
-		"SELECT * FROM %s WHERE albumId = %d",
-		"AlbumAccess",
-		albumId,
-	)
-
-	var rows, err = db.Query(query)
-
-	if err != nil {
-		panic(err)
-	}
-
-	defer rows.Close()
-
-	for rows.Next() {
-		var albumAccess AlbumAccess
-
-		rows.Scan(
-			&albumAccess.albumId,
-			&albumAccess.userId,
-			&albumAccess.accessLevel,
-		)
-
-		albumAccessList = append(albumAccessList, albumAccess)
-	}
-
-	return albumAccessList
+	name := fmt.Sprintf("%d.png", h.Sum32())
+	return name
 }

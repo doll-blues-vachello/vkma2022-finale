@@ -1,7 +1,8 @@
-BIN=vkma2022-finale
+EXEC=vkma2022-finale
 
 server:
-	go build -o bin/${BIN} src/main.go
+	rm -f bin/${EXEC}
+	go build -o bin/${EXEC} src/*.go
 
 database:
 	sqlite3 storage.db < init/schema.sql
