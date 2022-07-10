@@ -28,6 +28,23 @@ func main() {
 
 	defer db.Close()
 
+	r.DELETE("/album/:id", func(c *gin.Context) {
+		var repo = AlbumRepo{db}
+		var id, _ = strconv.ParseInt(c.Param("id"), 10, 64)
+
+		repo.DeleteByID(id)
+		c.JSON(http.StatusOK, "")
+	})
+
+	r.PUT("/album/:album_id", func(c *gin.Context) {
+		var repo = AlbumRepo{db}
+		var albumId, _ = strconv.ParseInt(c.Param("album_id"), 10, 64)
+		var userId, _ = strconv.ParseInt(c.Query("user_id"), 10, 64)
+		var title = c.Query("title")
+
+		repo.Update(Album{ID: albumId, UserID: userId, Title: title})
+	})
+
 	r.POST("/album", func(c *gin.Context) {
 		var repo = AlbumRepo{db}
 		var userId, _ = strconv.ParseInt(c.Query("user_id"), 10, 64)
@@ -56,6 +73,22 @@ func main() {
 		}
 
 		c.JSON(http.StatusOK, album)
+	})
+
+	r.DELETE("/photo/:id", func(c *gin.Context) {
+		var repo = PhotoRepo{db}
+		var id, _ = strconv.ParseInt(c.Param("id"), 10, 64)
+
+		repo.DeleteByID(id)
+		c.JSON(http.StatusOK, "")
+	})
+
+	r.PUT("/photo/:photo_id", func(c *gin.Context) {
+		var repo = PhotoRepo{db}
+		var photoId, _ = strconv.ParseInt(c.Param("photo_id"), 10, 64)
+		var albumId, _ = strconv.ParseInt(c.Query("album_id"), 10, 64)
+
+		repo.Update(Photo{ID: photoId, AlbumID: albumId})
 	})
 
 	r.POST("/photo", func(c *gin.Context) {
@@ -115,6 +148,14 @@ func main() {
 		c.JSON(http.StatusOK, photo)
 	})
 
+	r.DELETE("/autograph/svg/:id", func(c *gin.Context) {
+		var repo = ImageAutographRepo{db}
+		var id, _ = strconv.ParseInt(c.Param("id"), 10, 64)
+
+		repo.DeleteByID(id)
+		c.JSON(http.StatusOK, "")
+	})
+
 	r.POST("/autograph/svg", func(c *gin.Context) {
 		var repo = ImageAutographRepo{db}
 		var photoId, _ = strconv.ParseInt(c.Query("photo_id"), 10, 64)
@@ -171,6 +212,23 @@ func main() {
 		c.JSON(http.StatusOK, autograph)
 	})
 
+	r.PUT("/autograph/text/:id", func(c *gin.Context) {
+		var repo = TextAutographRepo{db}
+		var id, _ = strconv.ParseInt(c.Param("id"), 10, 64)
+		var text = c.Query("text")
+
+		repo.Update(TextAutograph{ID: id, Text: text})
+		c.JSON(http.StatusOK, "")
+	})
+
+	r.DELETE("/autograph/text/:id", func(c *gin.Context) {
+		var repo = TextAutographRepo{db}
+		var id, _ = strconv.ParseInt(c.Param("id"), 10, 64)
+
+		repo.DeleteByID(id)
+		c.JSON(http.StatusOK, "")
+	})
+
 	r.POST("/autograph/text", func(c *gin.Context) {
 		var repo = TextAutographRepo{db}
 		var photoId, _ = strconv.ParseInt(c.Query("photo_id"), 10, 64)
@@ -207,7 +265,7 @@ func main() {
 		c.JSON(http.StatusOK, autograph)
 	})
 
-	r.Run()
+	r.Run(":4567")
 }
 
 func hashName(id_1 int64, id_2 int64, ext string) string {

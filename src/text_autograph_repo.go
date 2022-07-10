@@ -39,3 +39,23 @@ func (repo TextAutographRepo) GetByID(id int64) (TextAutograph, error) {
 	textAutograph.Created = created.Unix()
 	return textAutograph, nil
 }
+
+func (repo TextAutographRepo) Update(autograph TextAutograph) {
+	query := fmt.Sprintf(`
+		UPDATE
+			TextAutographs
+		SET
+			PhotoID  = %d,
+			AuthorID = %d,
+			Text     = '%s'
+		WHERE
+			ID = %d
+	`, autograph.PhotoID, autograph.AuthorID, autograph.Text, autograph.ID)
+
+	repo.DB.Exec(query)
+}
+
+func (repo TextAutographRepo) DeleteByID(id int64) {
+	query := fmt.Sprintf("DELETE FROM TextAutographs WHERE ID = %d", id)
+	repo.DB.Exec(query)
+}

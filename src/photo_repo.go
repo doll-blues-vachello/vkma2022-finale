@@ -39,3 +39,21 @@ func (repo PhotoRepo) GetByID(id int64) (Photo, error) {
 	photo.Created = created.Unix()
 	return photo, nil
 }
+
+func (repo PhotoRepo) Update(photo Photo) {
+	query := fmt.Sprintf(`
+		UPDATE
+			Photos
+		SET
+			AlbumID = %d,
+		WHERE
+			ID = %d
+	`, photo.AlbumID, photo.ID)
+
+	repo.DB.Exec(query)
+}
+
+func (repo PhotoRepo) DeleteByID(id int64) {
+	query := fmt.Sprintf("DELETE FROM Photos WHERE ID = %d", id)
+	repo.DB.Exec(query)
+}
