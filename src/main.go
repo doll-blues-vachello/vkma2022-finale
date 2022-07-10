@@ -171,6 +171,42 @@ func main() {
 		c.JSON(http.StatusOK, autograph)
 	})
 
+	r.POST("/autograph/text", func(c *gin.Context) {
+		var repo = TextAutographRepo{db}
+		var photoId, _ = strconv.ParseInt(c.Query("photo_id"), 10, 64)
+		var authorId, _ = strconv.ParseInt(c.Query("author_id"), 10, 64)
+		var text = c.Query("text")
+
+		var autographId = repo.Add(TextAutograph{
+			PhotoID:  photoId,
+			AuthorID: authorId,
+			Text:     text,
+		})
+
+		c.JSON(http.StatusOK, autographId)
+	})
+
+	r.GET("/autograph/text/:autograph_id", func(c *gin.Context) {
+		var repo = TextAutographRepo{db}
+		var autographId, e = strconv.ParseInt(c.Param("autograph_id"), 10, 64)
+
+		if e != nil {
+			c.JSON(http.StatusBadRequest, "error")
+			fmt.Println(e)
+			return
+		}
+
+		var autograph, err2 = repo.GetByID(autographId)
+
+		if err2 != nil {
+			c.JSON(http.StatusNotFound, "error")
+			fmt.Println(err2)
+			return
+		}
+
+		c.JSON(http.StatusOK, autograph)
+	})
+
 	r.Run()
 }
 
