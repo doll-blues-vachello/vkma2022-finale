@@ -37,6 +37,8 @@ export GIN_MODE=release
 
 ## API
 
+http://vkma.kheynov.ru
+
 ### Albums
 
 #### POST `/album`
